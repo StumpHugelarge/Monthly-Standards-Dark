@@ -46,7 +46,7 @@
     padding: 24px 16px 48px;
   }
   .wrap{
-    max-width: 640px;
+    max-width: 880px;
     margin: 0 auto;
   }
   header.app-header{
@@ -72,12 +72,12 @@
     border: 0.5px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    padding: 18px 20px;
+    padding: 18px 24px;
     display: flex;
     flex-wrap: wrap;
-    gap: 18px;
+    gap: 20px;
     align-items: flex-start;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
   }
   .field{
     display:flex;
@@ -92,9 +92,6 @@
     letter-spacing: 0.05em;
     white-space: nowrap;
   }
-  #daysWorked{
-    min-width: 110px;
-  }
   select, input[type="number"], input[type="time"]{
     font-family: inherit;
     font-size: 0.95rem;
@@ -108,6 +105,19 @@
   select:focus, input:focus{
     outline: 2px solid var(--accent);
     outline-offset: 1px;
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button{
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"]{
+    -moz-appearance: textfield;
+  }
+  .stepper-row{
+    display:flex;
+    align-items:center;
+    gap: 8px;
   }
   .stepper{
     display:flex;
@@ -146,6 +156,35 @@
     padding: 6px 2px;
   }
   .stepper input:focus{ outline: none; }
+  .stepper.sm button{
+    width: 26px;
+    height: 26px;
+    font-size: 0.95rem;
+  }
+  .stepper.sm input{
+    width: 38px;
+  }
+  .half-btn{
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    border: 0.5px solid var(--border);
+    background: var(--panel);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .half-btn:hover{
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .half-btn.active{
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
   .hint{
     font-size: 0.7rem;
     color: var(--text-muted);
@@ -181,7 +220,7 @@
   .cards{
     display:grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 20px;
   }
   @media (max-width: 720px){
     .cards{ grid-template-columns: 1fr; }
@@ -193,7 +232,7 @@
     border: 0.5px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    padding: 22px;
+    padding: 24px;
     display:flex;
     flex-direction:column;
     gap: 16px;
@@ -423,17 +462,28 @@
     </div>
     <div class="field">
       <label for="vacVal">Vacation Days</label>
-      <div class="stepper">
-        <button id="vacDown" type="button" aria-label="Decrease vacation days by 1">–</button>
-        <input type="number" id="vacVal" min="0" max="10" step="0.5" value="0" inputmode="decimal">
-        <button id="vacUp" type="button" aria-label="Increase vacation days by 1">+</button>
+      <div class="stepper-row">
+        <div class="stepper">
+          <button id="vacDown" type="button" aria-label="Decrease vacation days by 1">–</button>
+          <input type="number" id="vacVal" min="0" max="10" step="0.5" value="0" inputmode="decimal">
+          <button id="vacUp" type="button" aria-label="Increase vacation days by 1">+</button>
+        </div>
+        <button id="vacHalf" class="half-btn" type="button" aria-label="Toggle half day">½</button>
       </div>
-      <div class="hint">± Buttons Step By 1 Day; Use the Arrows for Half Days</div>
+      <div class="hint">± Buttons Step By 1 Day; ½ Nudges By Half A Day</div>
     </div>
     <div class="field">
       <label for="daysWorked">Days Worked</label>
-      <input type="number" id="daysWorked" min="0" step="0.5" inputmode="decimal">
+      <div class="stepper-row">
+        <div class="stepper">
+          <button id="dwDown" type="button" aria-label="Decrease days worked by 1">–</button>
+          <input type="number" id="daysWorked" min="0" step="0.5" inputmode="decimal">
+          <button id="dwUp" type="button" aria-label="Increase days worked by 1">+</button>
+        </div>
+        <button id="dwHalf" class="half-btn" type="button" aria-label="Toggle half day">½</button>
       </div>
+      <div class="hint">Auto-Calculated — ± And ½ Let You Adjust It Manually</div>
+    </div>
   </div>
 
   <div class="summary-bar" id="summaryBar"></div>
@@ -445,11 +495,20 @@
       <div class="field">
         <label for="avgHours">Current Avg Time (per day)</label>
         <div class="time-duration">
-          <input type="number" id="avgHours" min="0" max="24" step="1" placeholder="Hrs" inputmode="decimal">
+          <div class="stepper sm">
+            <button id="hoursDown" type="button" aria-label="Decrease hours by 1">–</button>
+            <input type="number" id="avgHours" min="0" max="24" step="1" placeholder="Hrs" inputmode="decimal">
+            <button id="hoursUp" type="button" aria-label="Increase hours by 1">+</button>
+          </div>
           <span>hrs</span>
-          <input type="number" id="avgMinutes" min="0" max="59" step="1" placeholder="Min" inputmode="decimal">
+          <div class="stepper sm">
+            <button id="minutesDown" type="button" aria-label="Decrease minutes by 5">–</button>
+            <input type="number" id="avgMinutes" min="0" max="59" step="5" placeholder="Min" inputmode="decimal">
+            <button id="minutesUp" type="button" aria-label="Increase minutes by 5">+</button>
+          </div>
           <span>min</span>
         </div>
+        <div class="hint">± Buttons Step Hours By 1, Minutes By 5</div>
       </div>
       <div class="result gray" id="hoursResult">
         <div class="big" id="hoursBig">–</div>
@@ -465,7 +524,12 @@
       <div class="goal-tag">Goal: 85% average</div>
       <div class="field">
         <label for="avgRate">Current Avg Rate (%)</label>
-        <input type="number" id="avgRate" min="0" max="100" step="0.01">
+        <div class="stepper">
+          <button id="rateDown" type="button" aria-label="Decrease rate by 1%">–</button>
+          <input type="number" id="avgRate" min="0" max="100" step="0.01">
+          <button id="rateUp" type="button" aria-label="Increase rate by 1%">+</button>
+        </div>
+        <div class="hint">± Buttons Step By 1%; Tap To Type An Exact Value</div>
       </div>
       <div class="result gray" id="rateResult">
         <div class="big" id="rateBig">–</div>
@@ -580,6 +644,27 @@ const yearSelect = document.getElementById("year");
 const vacVal = document.getElementById("vacVal");
 const vacUp = document.getElementById("vacUp");
 const vacDown = document.getElementById("vacDown");
+const vacHalf = document.getElementById("vacHalf");
+const dwUp = document.getElementById("dwUp");
+const dwDown = document.getElementById("dwDown");
+const dwHalf = document.getElementById("dwHalf");
+const hoursUp = document.getElementById("hoursUp");
+const hoursDown = document.getElementById("hoursDown");
+const minutesUp = document.getElementById("minutesUp");
+const minutesDown = document.getElementById("minutesDown");
+const rateUp = document.getElementById("rateUp");
+const rateDown = document.getElementById("rateDown");
+
+// Toggles the .5 fraction on a value: adds it if the value is currently a
+// whole number, removes it if the value already has a half-day fraction.
+function toggleHalfValue(value, min, max){
+  const v = Number(value) || 0;
+  const hasHalf = Math.abs((v % 1) - 0.5) < 1e-9;
+  let result = hasHalf ? Math.floor(v) : Math.floor(v) + 0.5;
+  if(result < min) result = min;
+  if(result > max) result = max;
+  return result;
+}
 
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 MONTH_NAMES.forEach((m, i) => {
@@ -688,6 +773,7 @@ function render(){
   if(document.activeElement !== vacVal) vacVal.value = state.vacationDays;
   vacDown.disabled = state.vacationDays <= 0;
   vacUp.disabled = state.vacationDays >= 10;
+  vacHalf.classList.toggle("active", Math.abs((Number(state.vacationDays) || 0) % 1 - 0.5) < 1e-9);
 
   const year = Number(state.year);
   const monthIndex = Number(state.month);
@@ -707,6 +793,7 @@ function render(){
   } else {
     if(document.activeElement !== daysWorkedInput) daysWorkedInput.value = state.daysWorked;
   }
+  dwHalf.classList.toggle("active", Math.abs((Number(state.daysWorked) || 0) % 1 - 0.5) < 1e-9);
 
   const avgHoursEl = document.getElementById("avgHours");
   const avgMinutesEl = document.getElementById("avgMinutes");
@@ -766,13 +853,40 @@ document.getElementById("vacVal").addEventListener("input", (e) => {
   state.vacationDays = v;
   render();
 });
+vacHalf.addEventListener("click", () => {
+  state.vacationDays = toggleHalfValue(state.vacationDays, 0, 10);
+  render();
+});
 document.getElementById("daysWorked").addEventListener("input", (e) => {
   state.overrideDaysWorked = true;
   state.daysWorked = Number(e.target.value) || 0;
   render();
 });
+dwUp.addEventListener("click", () => {
+  state.overrideDaysWorked = true;
+  state.daysWorked = (Number(state.daysWorked) || 0) + 1;
+  render();
+});
+dwDown.addEventListener("click", () => {
+  state.overrideDaysWorked = true;
+  state.daysWorked = Math.max(0, (Number(state.daysWorked) || 0) - 1);
+  render();
+});
+dwHalf.addEventListener("click", () => {
+  state.overrideDaysWorked = true;
+  state.daysWorked = toggleHalfValue(state.daysWorked, 0, Infinity);
+  render();
+});
 document.getElementById("avgHours").addEventListener("input", (e) => {
   state.avgHours = e.target.value;
+  render();
+});
+hoursUp.addEventListener("click", () => {
+  state.avgHours = String(Math.min(24, (Number(state.avgHours) || 0) + 1));
+  render();
+});
+hoursDown.addEventListener("click", () => {
+  state.avgHours = String(Math.max(0, (Number(state.avgHours) || 0) - 1));
   render();
 });
 document.getElementById("avgMinutes").addEventListener("input", (e) => {
@@ -781,8 +895,24 @@ document.getElementById("avgMinutes").addEventListener("input", (e) => {
   state.avgMinutes = v;
   render();
 });
+minutesUp.addEventListener("click", () => {
+  state.avgMinutes = String(Math.min(59, (Number(state.avgMinutes) || 0) + 5));
+  render();
+});
+minutesDown.addEventListener("click", () => {
+  state.avgMinutes = String(Math.max(0, (Number(state.avgMinutes) || 0) - 5));
+  render();
+});
 document.getElementById("avgRate").addEventListener("input", (e) => {
   state.avgRate = e.target.value;
+  render();
+});
+rateUp.addEventListener("click", () => {
+  state.avgRate = String(Math.min(100, Math.round(((Number(state.avgRate) || 0) + 1) * 100) / 100));
+  render();
+});
+rateDown.addEventListener("click", () => {
+  state.avgRate = String(Math.max(0, Math.round(((Number(state.avgRate) || 0) - 1) * 100) / 100));
   render();
 });
 
