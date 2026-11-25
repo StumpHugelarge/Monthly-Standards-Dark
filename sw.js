@@ -1,4 +1,4 @@
-const CACHE_NAME = "msc-cache-v8";
+const CACHE_NAME = "msc-cache-v9";
 const ASSETS = [
   "./",
   "./index.html",
@@ -9,9 +9,7 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
   self.skipWaiting();
 });
 
@@ -24,19 +22,27 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Network-first: always try to fetch the latest version when online, and keep
-// the cache fresh as a side effect. Only fall back to the cached copy if the
-// network request fails outright (i.e. actually offline). This means deploys
-// show up immediately for anyone with a connection, instead of getting stuck
-// behind whatever was cached on first visit.
+// Network-first so deploys show up immediately; cache is only the offline fallback.
+// Only same-origin GETs are handled. Range requests (video seeking/streaming in
+// Safari) go straight to the browser, and only complete 200 responses are cached.
 self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  if (req.method !== "GET" || req.headers.has("range")) return;
+  if (new URL(req.url).origin !== self.location.origin) return;
+
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-        return response;
+    fetch(req)
+      .then((res) => {
+        if (res && res.status === 200 && res.type === "basic") {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => {});
+        }
+        return res;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() =>
+        caches.match(req).then(
+          (hit) => hit || (req.mode === "navigate" ? caches.match("./index.html") : Response.error())
+        )
+      )
   );
 });

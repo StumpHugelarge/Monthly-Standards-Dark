@@ -1,21 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Monthly Standards Calculator</title>
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#f4f5f9">
 <meta name="description" content="Calculates the required logged-in time and answer rate needed to hit your monthly goals.">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
+<script>
+(function(){
+  var t = "light";
+  try{
+    t = localStorage.getItem("msc-theme");
+    if(t !== "light" && t !== "dark"){
+      t = (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+    }
+  }catch(e){ t = "light"; }
+  document.documentElement.setAttribute("data-theme", t);
+})();
+</script>
 <style>
-  :root{
+  :root, :root[data-theme="light"]{
+    color-scheme: light;
+    --bg: #f4f5f9;
+    --panel: #ffffff;
+    --field: #fbfbfd;
+    --half-bg: #fbfbfd;
+    --border: #e6e8f0;
+    --border-strong: #e6e8f0;
+    --text: #1a1d29;
+    --text-muted: #6b7185;
+    --accent: #4f46e5;
+    --accent-soft: #eef0fe;
+    --red-bg: #fdeceb;
+    --red-text: #c0392b;
+    --red-border: #f3c6c1;
+    --red-sub: #6b7185;
+    --green-bg: #e9f7ef;
+    --green-text: #1e8449;
+    --green-border: #bfe6cd;
+    --green-sub: #6b7185;
+    --gray-bg: #f1f2f5;
+    --gray-text: #6b7185;
+    --gray-border: #dcdfe6;
+    --warn-bg: #fff7e6;
+    --warn-text: #8a5a00;
+    --warn-border: #f2d9a6;
+    --summary-bg: #eef0fe;
+    --summary-text: #3730a3;
+    --summary-strong: #3730a3;
+    --dis-bg: transparent;
+    --dis-color: #6b7185;
+    --face-bg: #ffffff;
+    --overlay: rgba(20,20,43,0.45);
+    --r-card: 16px;
+    --r-ctl: 10px;
+    --r-btn: 8px;
+    --r-result: 14px;
+    --r-sum: 12px;
+    --bw: 1px;
+    --blur: none;
+    --shadow: 0 1px 2px rgba(20,20,43,0.04), 0 8px 24px rgba(20,20,43,0.06);
+    --fw-strong: 700;
+    --fw-big: 800;
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
     --bg: #000000;
     --panel: rgba(255,255,255,0.07);
-    --panel-strong: rgba(255,255,255,0.13);
+    --field: rgba(255,255,255,0.13);
+    --half-bg: rgba(255,255,255,0.07);
     --border: rgba(255,255,255,0.16);
     --border-strong: rgba(255,255,255,0.26);
     --text: #f5f5f7;
@@ -23,18 +81,36 @@
     --accent: #0a84ff;
     --accent-soft: rgba(10,132,255,0.18);
     --red-bg: rgba(255,69,58,0.16);
-    --red-border: rgba(255,69,58,0.45);
     --red-text: #ffb3ad;
+    --red-border: rgba(255,69,58,0.45);
     --red-sub: #c98884;
     --green-bg: rgba(48,209,88,0.16);
-    --green-border: rgba(48,209,88,0.45);
     --green-text: #9df0b3;
+    --green-border: rgba(48,209,88,0.45);
     --green-sub: #7fbf91;
     --gray-bg: rgba(255,255,255,0.06);
     --gray-text: #9a9aa1;
     --gray-border: rgba(255,255,255,0.14);
-    --radius: 22px;
+    --warn-bg: rgba(255,196,0,0.14);
+    --warn-text: #ffd479;
+    --warn-border: rgba(255,196,0,0.4);
+    --summary-bg: rgba(255,255,255,0.07);
+    --summary-text: #9a9aa1;
+    --summary-strong: #f5f5f7;
+    --dis-bg: rgba(255,255,255,0.13);
+    --dis-color: #f5f5f7;
+    --face-bg: rgba(255,255,255,0.13);
+    --overlay: rgba(0,0,0,0.65);
+    --r-card: 22px;
+    --r-ctl: 999px;
+    --r-btn: 999px;
+    --r-result: 20px;
+    --r-sum: 18px;
+    --bw: 0.5px;
+    --blur: blur(20px);
     --shadow: none;
+    --fw-strong: 600;
+    --fw-big: 600;
   }
   *{box-sizing:border-box;}
   body{
@@ -43,95 +119,88 @@
     background: var(--bg);
     color: var(--text);
     -webkit-font-smoothing: antialiased;
-    padding: 24px 16px 48px;
+    padding: calc(24px + env(safe-area-inset-top)) 16px calc(48px + env(safe-area-inset-bottom));
   }
-  .wrap{
-    max-width: 880px;
-    margin: 0 auto;
-  }
+  .wrap{ max-width: 880px; margin: 0 auto; }
   header.app-header{
+    position: relative;
     text-align:center;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
+    padding: 0 48px;
   }
   header.app-header h1{
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: var(--fw-strong);
     margin: 0 0 4px;
     letter-spacing: -0.01em;
+  }
+  header.app-header p{ color: var(--text-muted); margin: 0; font-size: 0.9rem; }
+  .theme-toggle{
+    position:absolute;
+    top:0; right:0;
+    width: 38px; height: 38px;
+    border-radius: 999px;
+    border: var(--bw) solid var(--border);
+    background: var(--field);
     color: var(--text);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
   }
-  header.app-header p{
-    color: var(--text-muted);
-    margin: 0;
-    font-size: 0.9rem;
-  }
+  .theme-toggle:hover{ color: var(--accent); border-color: var(--accent); }
   .controls{
     background: var(--panel);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: var(--bw) solid var(--border);
+    border-radius: var(--r-card);
     box-shadow: var(--shadow);
-    padding: 18px 24px;
+    padding: 18px 22px;
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
     align-items: flex-start;
     margin-bottom: 20px;
   }
-  .field{
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-  }
+  .field{ display:flex; flex-direction:column; gap:6px; }
   .field label{
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
     white-space: nowrap;
   }
-  select, input[type="number"], input[type="time"]{
+  select, input[type="number"]{
     font-family: inherit;
     font-size: 0.95rem;
     padding: 9px 12px;
-    border-radius: 999px;
-    border: 0.5px solid var(--border);
-    background: var(--panel-strong);
+    border-radius: var(--r-ctl);
+    border: var(--bw) solid var(--border);
+    background: var(--field);
     color: var(--text);
     min-width: 110px;
   }
-  select:focus, input:focus{
+  select:focus, input:focus, button:focus-visible{
     outline: 2px solid var(--accent);
     outline-offset: 1px;
   }
   input[type="number"]::-webkit-outer-spin-button,
-  input[type="number"]::-webkit-inner-spin-button{
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  input[type="number"]{
-    -moz-appearance: textfield;
-  }
-  .stepper-row{
-    display:flex;
-    align-items:center;
-    gap: 8px;
-  }
+  input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance: none; margin: 0; }
+  input[type="number"]{ -moz-appearance: textfield; }
+  .stepper-row{ display:flex; align-items:center; gap: 8px; }
   .stepper{
     display:flex;
     align-items:center;
     gap:10px;
-    background: var(--panel-strong);
-    border: 0.5px solid var(--border);
-    border-radius: 999px;
+    background: var(--field);
+    border: var(--bw) solid var(--border);
+    border-radius: var(--r-ctl);
     padding: 4px;
   }
   .stepper button{
-    width: 32px;
-    height: 32px;
-    border-radius: 999px;
+    width: 32px; height: 32px;
+    border-radius: var(--r-btn);
     border: none;
     background: var(--accent-soft);
     color: var(--accent);
@@ -140,15 +209,12 @@
     cursor: pointer;
     line-height: 1;
   }
-  .stepper button:disabled{
-    opacity: 0.35;
-    cursor: not-allowed;
-  }
+  .stepper button:disabled{ opacity: 0.35; cursor: not-allowed; }
   .stepper input{
     width: 52px;
     min-width: 0;
     text-align:center;
-    font-weight:600;
+    font-weight: var(--fw-strong);
     font-size: 0.95rem;
     border: none;
     background: transparent;
@@ -156,131 +222,101 @@
     padding: 6px 2px;
   }
   .stepper input:focus{ outline: none; }
-  .stepper.sm button{
-    width: 26px;
-    height: 26px;
-    font-size: 0.95rem;
-  }
-  .stepper.sm input{
-    width: 38px;
-  }
+  .stepper.sm button{ width: 26px; height: 26px; font-size: 0.95rem; }
+  .stepper.sm input{ width: 38px; }
   .half-btn{
-    width: 38px;
-    height: 38px;
-    border-radius: 999px;
-    border: 0.5px solid var(--border);
-    background: var(--panel);
+    width: 38px; height: 38px;
+    border-radius: var(--r-ctl);
+    border: var(--bw) solid var(--border);
+    background: var(--half-bg);
     color: var(--text-muted);
     font-size: 0.8rem;
     font-weight: 700;
     cursor: pointer;
     flex-shrink: 0;
   }
-  .half-btn:hover{
+  .half-btn:hover{ color: var(--accent); border-color: var(--accent); }
+  .half-btn.active{ color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  .hint{ font-size: 0.7rem; color: var(--text-muted); max-width: 200px; }
+  .field label.check{
+    display:flex; align-items:center; gap:6px;
+    font-size: 0.72rem; font-weight: 500;
+    text-transform: none; letter-spacing: 0;
+    cursor: pointer;
+  }
+  .check input{ accent-color: var(--accent); }
+  .link-btn{
+    background: none; border: none; padding: 0;
     color: var(--accent);
-    border-color: var(--accent);
+    font-family: inherit;
+    font-size: 0.72rem;
+    text-decoration: underline;
+    cursor: pointer;
+    text-align: left;
   }
-  .half-btn.active{
-    color: var(--accent);
-    border-color: var(--accent);
-    background: var(--accent-soft);
-  }
-  .hint{
-    font-size: 0.7rem;
-    color: var(--text-muted);
-    max-width: 180px;
-  }
-  .time-duration{
-    display:flex;
-    align-items:center;
-    gap: 6px;
-  }
-  .time-duration input{
-    width: 64px;
-  }
-  .time-duration span{
-    color: var(--text-muted);
-    font-weight: 600;
-  }
+  .time-duration{ display:flex; align-items:center; gap: 6px; flex-wrap: wrap; }
+  .time-duration span{ color: var(--text-muted); font-weight: 600; }
   .summary-bar{
     display:flex;
     flex-wrap:wrap;
     gap: 8px 24px;
-    background: var(--panel);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 0.5px solid var(--border);
-    border-radius: 18px;
+    background: var(--summary-bg);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: var(--bw) solid var(--border);
+    border-radius: var(--r-sum);
     padding: 12px 18px;
     margin-bottom: 20px;
-    font-size: 0.83rem;
-    color: var(--text-muted);
+    font-size: 0.85rem;
+    color: var(--summary-text);
   }
-  .summary-bar b{ font-weight: 600; color: var(--text); }
-  .cards{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+  .summary-bar b{ font-weight: var(--fw-strong); color: var(--summary-strong); }
+  .stale-note{
+    background: var(--warn-bg);
+    color: var(--warn-text);
+    border: var(--bw) solid var(--warn-border);
+    border-radius: var(--r-sum);
+    padding: 10px 16px;
+    margin-bottom: 20px;
+    font-size: 0.82rem;
   }
-  @media (max-width: 720px){
-    .cards{ grid-template-columns: 1fr; }
-  }
+  .stale-note[hidden]{ display:none; }
+  .cards{ display:grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 720px){ .cards{ grid-template-columns: 1fr; } }
   .card{
     background: var(--panel);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: var(--bw) solid var(--border);
+    border-radius: var(--r-card);
     box-shadow: var(--shadow);
     padding: 24px;
     display:flex;
     flex-direction:column;
     gap: 16px;
   }
-  .card h2{
-    font-size: 1.05rem;
-    margin: 0;
-    font-weight: 600;
-    color: var(--text);
-  }
-  .card .goal-tag{
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    margin-top: -10px;
-  }
-  .row2{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
+  .card h2{ font-size: 1.05rem; margin: 0; font-weight: var(--fw-strong); }
+  .card .goal-tag{ font-size: 0.78rem; color: var(--text-muted); margin-top: -10px; }
   .result{
-    border-radius: 20px;
+    border-radius: var(--r-result);
     padding: 18px;
     text-align:center;
-    border: 0.5px solid var(--border);
+    border: var(--bw) solid var(--border);
     transition: background 0.15s ease, border-color 0.15s ease;
   }
   .result.red{ background: var(--red-bg); border-color: var(--red-border); }
   .result.green{ background: var(--green-bg); border-color: var(--green-border); }
   .result.gray{ background: var(--gray-bg); border-color: var(--gray-border); }
-  .result .big{
-    font-size: 1.9rem;
-    font-weight: 600;
-    line-height: 1.1;
-  }
+  .result .big{ font-size: 1.9rem; font-weight: var(--fw-big); line-height: 1.1; }
   .result.red .big{ color: var(--red-text); }
   .result.green .big{ color: var(--green-text); }
   .result.gray .big{ color: var(--gray-text); }
-  .result .sub{
-    font-size: 0.8rem;
-    margin-top: 4px;
-    color: var(--text-muted);
-  }
+  .result .sub{ font-size: 0.8rem; margin-top: 4px; color: var(--text-muted); }
   .result.red .sub{ color: var(--red-sub); }
   .result.green .sub{ color: var(--green-sub); }
   .result .status{
     font-size: 0.72rem;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-top: 6px;
@@ -294,45 +330,29 @@
     font-size: 0.82rem;
     color: var(--text-muted);
     padding-top: 8px;
-    border-top: 0.5px dashed var(--border);
+    border-top: var(--bw) dashed var(--border);
   }
   .detail-line b{ color: var(--text); font-weight: 600; }
-  footer{
-    text-align:center;
-    color: var(--text-muted);
-    font-size: 0.75rem;
-    margin-top: 28px;
-  }
-  a.install-hint{ color: var(--accent); text-decoration:none; font-weight:600; }
-
-  .disclaimer-row{
-    margin-top: 14px;
-    display: flex;
-    justify-content: center;
-  }
-  .disclaimer-btn{
+  footer{ text-align:center; color: var(--text-muted); font-size: 0.75rem; margin-top: 32px; }
+  .footer-row{ margin-top: 14px; display: flex; justify-content: center; gap: 10px; }
+  .pill-btn{
     font-family: inherit;
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--text);
-    background: var(--panel-strong);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 0.5px solid var(--border);
+    color: var(--dis-color);
+    background: var(--dis-bg);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: var(--bw) solid var(--border);
     border-radius: 999px;
     padding: 8px 18px;
     cursor: pointer;
   }
-  .disclaimer-btn:hover{
-    color: var(--accent);
-    border-color: var(--accent);
-  }
+  .pill-btn:hover{ color: var(--accent); border-color: var(--accent); }
   .modal-overlay{
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.65);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: var(--overlay);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -340,29 +360,6 @@
     z-index: 1000;
   }
   .modal-overlay[hidden]{ display: none; }
-  .modal-box{
-    background: var(--panel-strong);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 0.5px solid var(--border-strong);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    max-width: 420px;
-    width: 100%;
-    padding: 24px;
-  }
-  .modal-box h3{
-    margin: 0 0 12px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text);
-  }
-  .modal-box p{
-    margin: 0 0 20px;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: var(--text-muted);
-  }
   .modal-close{
     font-family: inherit;
     font-size: 0.9rem;
@@ -370,16 +367,11 @@
     color: #fff;
     background: var(--accent);
     border: none;
-    border-radius: 999px;
+    border-radius: var(--r-ctl);
     padding: 9px 20px;
     cursor: pointer;
   }
-
-  .flip-card{
-    perspective: 1400px;
-    max-width: 420px;
-    width: 100%;
-  }
+  .flip-card{ perspective: 1400px; max-width: 420px; width: 100%; }
   .flip-card-inner{
     position: relative;
     width: 100%;
@@ -388,40 +380,24 @@
     transform-style: preserve-3d;
     cursor: pointer;
   }
-  .flip-card.flipped .flip-card-inner{
-    transform: rotateY(180deg);
-  }
+  .flip-card.flipped .flip-card-inner{ transform: rotateY(180deg); }
   .flip-card-face{
     position: absolute;
     inset: 0;
     backface-visibility: hidden;
-    background: var(--panel-strong);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 0.5px solid var(--border-strong);
-    border-radius: var(--radius);
+    background: var(--face-bg);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: var(--bw) solid var(--border-strong);
+    border-radius: var(--r-card);
     box-shadow: var(--shadow);
     padding: 24px;
     display: flex;
     flex-direction: column;
   }
-  .flip-card-back{
-    transform: rotateY(180deg);
-    align-items: center;
-    justify-content: center;
-  }
-  .flip-card-face h3{
-    margin: 0 0 12px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text);
-  }
-  .flip-card-face p{
-    margin: 0 0 16px;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: var(--text-muted);
-  }
+  .flip-card-back{ transform: rotateY(180deg); align-items: center; justify-content: center; }
+  .flip-card-face h3{ margin: 0 0 12px; font-size: 1.1rem; font-weight: var(--fw-strong); }
+  .flip-card-face p{ margin: 0 0 16px; font-size: 0.9rem; line-height: 1.5; color: var(--text-muted); }
   .flip-hint{
     font-size: 0.72rem;
     color: var(--accent);
@@ -429,19 +405,9 @@
     margin-bottom: 14px;
     animation: pulse-hint 1.8s ease-in-out infinite;
   }
-  @keyframes pulse-hint{
-    0%, 100% { opacity: 0.45; }
-    50% { opacity: 1; }
-  }
-  .flip-card-back video{
-    width: 100%;
-    border-radius: 16px;
-    margin-bottom: 16px;
-    display: block;
-  }
-  .flip-card-face .modal-close{
-    align-self: center;
-  }
+  @keyframes pulse-hint{ 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+  .flip-card-back video{ width: 100%; border-radius: 12px; margin-bottom: 16px; display: block; }
+  .flip-card-face .modal-close{ align-self: center; }
 </style>
 </head>
 <body>
@@ -449,6 +415,7 @@
   <header class="app-header">
     <h1>Monthly Standards Calculator</h1>
     <p>"What do you think of a person who only does the bare minimum?"</p>
+    <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch theme">☾</button>
   </header>
 
   <div class="controls">
@@ -460,18 +427,33 @@
       <label for="year">Year</label>
       <select id="year"></select>
     </div>
+
     <div class="field">
-      <label for="vacVal">Vacation Days</label>
+      <label for="vpVal">Vacation Taken</label>
       <div class="stepper-row">
         <div class="stepper">
-          <button id="vacDown" type="button" aria-label="Decrease vacation days by 1">–</button>
-          <input type="number" id="vacVal" min="0" max="10" step="0.5" value="0" inputmode="decimal">
-          <button id="vacUp" type="button" aria-label="Increase vacation days by 1">+</button>
+          <button id="vpDown" type="button" aria-label="Decrease vacation taken by 1">–</button>
+          <input type="number" id="vpVal" min="0" max="10" step="0.5" value="0" inputmode="decimal">
+          <button id="vpUp" type="button" aria-label="Increase vacation taken by 1">+</button>
         </div>
-        <button id="vacHalf" class="half-btn" type="button" aria-label="Toggle half day">½</button>
+        <button id="vpHalf" class="half-btn" type="button" aria-label="Toggle half day">½</button>
       </div>
-      <div class="hint">± Buttons Step By 1 Day; ½ Nudges By Half A Day</div>
+      <div class="hint">Already Used This Month — ± Steps 1 Day, ½ Nudges Half</div>
     </div>
+
+    <div class="field">
+      <label for="vuVal">Vacation Upcoming</label>
+      <div class="stepper-row">
+        <div class="stepper">
+          <button id="vuDown" type="button" aria-label="Decrease upcoming vacation by 1">–</button>
+          <input type="number" id="vuVal" min="0" max="10" step="0.5" value="0" inputmode="decimal">
+          <button id="vuUp" type="button" aria-label="Increase upcoming vacation by 1">+</button>
+        </div>
+        <button id="vuHalf" class="half-btn" type="button" aria-label="Toggle half day">½</button>
+      </div>
+      <div class="hint">Still Planned This Month — ± Steps 1 Day, ½ Nudges Half</div>
+    </div>
+
     <div class="field">
       <label for="daysWorked">Days Worked</label>
       <div class="stepper-row">
@@ -482,11 +464,14 @@
         </div>
         <button id="dwHalf" class="half-btn" type="button" aria-label="Toggle half day">½</button>
       </div>
-      <div class="hint">Auto-Calculated — Use ± & ½ To Manually Adjust</div>
+      <div class="hint" id="dwHint"></div>
+      <button id="dwAuto" class="link-btn" type="button" hidden>Reset to auto</button>
+      <label class="check" id="includeTodayLabel"><input type="checkbox" id="includeToday"> Count today as worked</label>
     </div>
   </div>
 
   <div class="summary-bar" id="summaryBar"></div>
+  <div class="stale-note" id="staleNote" role="status" hidden></div>
 
   <div class="cards">
     <div class="card">
@@ -503,19 +488,19 @@
           <span>hrs</span>
           <div class="stepper sm">
             <button id="minutesDown" type="button" aria-label="Decrease minutes by 5">–</button>
-            <input type="number" id="avgMinutes" min="0" max="59" step="1" placeholder="Min" inputmode="decimal">
+            <input type="number" id="avgMinutes" min="0" max="59" step="5" placeholder="Min" inputmode="decimal">
             <button id="minutesUp" type="button" aria-label="Increase minutes by 5">+</button>
           </div>
           <span>min</span>
         </div>
-        <div class="hint">± Buttons Step By 1, Tap To Type An Exact Value</div>
+        <div class="hint">± Buttons Step Hours By 1, Minutes By 5</div>
       </div>
-      <div class="result gray" id="hoursResult">
+      <div class="result gray" id="hoursResult" aria-live="polite">
         <div class="big" id="hoursBig">–</div>
         <div class="sub" id="hoursSub"></div>
         <div class="status" id="hoursStatus"></div>
       </div>
-      <div class="detail-line"><span>Working days (adjusted)</span><b id="hoursWorkingDays">–</b></div>
+      <div class="detail-line"><span>Working days (adj.)</span><b id="hoursWorkingDays">–</b></div>
       <div class="detail-line"><span>Days Remaining</span><b id="hoursDaysRemaining">–</b></div>
     </div>
 
@@ -531,20 +516,21 @@
         </div>
         <div class="hint">± Buttons Step By 1%; Tap To Type An Exact Value</div>
       </div>
-      <div class="result gray" id="rateResult">
+      <div class="result gray" id="rateResult" aria-live="polite">
         <div class="big" id="rateBig">–</div>
         <div class="sub" id="rateSub"></div>
         <div class="status" id="rateStatus"></div>
       </div>
-      <div class="detail-line"><span>Working days (adjusted)</span><b id="rateWorkingDays">–</b></div>
+      <div class="detail-line"><span>Working days (adj.)</span><b id="rateWorkingDays">–</b></div>
       <div class="detail-line"><span>Days Remaining</span><b id="rateDaysRemaining">–</b></div>
     </div>
   </div>
 
   <footer>
-    Holidays Observed: New Year's Day, Memorial Day, Independence Day, Labor Day, Thanksgiving, Christmas Day.
-    <div class="disclaimer-row">
-      <button id="disclaimerBtn" class="disclaimer-btn" type="button">Disclaimer</button>
+    Holidays Observed: New Year's Day, Memorial Day, Independence Day, Labor Day, Thanksgiving, Christmas Day (weekdays only — no weekend shifting).
+    <div class="footer-row">
+      <button id="disclaimerBtn" class="pill-btn" type="button">Disclaimer</button>
+      <button id="resetBtn" class="pill-btn" type="button">Reset</button>
     </div>
   </footer>
 </div>
@@ -554,12 +540,12 @@
     <div class="flip-card-inner" id="disclaimerFlipInner">
       <div class="flip-card-face flip-card-front">
         <h3 id="disclaimerTitle">Disclaimer</h3>
-        <p>This was created by a human. Humans make mistakes. This human is not a coder or a math person. The formulas and calculations contained in this app were created to the best of his meager abilities. The creator cannot be held responsible for any standards violations resulting from the use of this app.</p>
+        <p>Alan is a human and humans make mistakes. He is not a coder or a math person. The formulas and calculations contained in this app were created to the best of his meager abilities. Alan cannot be held responsible for any standards violations resulting from the use of this app.</p>
         <div class="flip-hint">✨ tap the card ✨</div>
         <button class="modal-close" type="button">Close</button>
       </div>
       <div class="flip-card-face flip-card-back">
-        <video id="easterEggVideo" src="easter-egg.mp4" autoplay loop muted playsinline></video>
+        <video id="easterEggVideo" src="easter-egg.mp4" loop muted playsinline preload="none"></video>
         <button class="modal-close" type="button">Close</button>
       </div>
     </div>
@@ -570,11 +556,25 @@
 /* ---------- Constants ---------- */
 const HOURS_GOAL = 5.5;      // hrs/day
 const RATE_GOAL = 0.85;      // 85%
-const STORAGE_KEY = "msc-state-v1";
+const HOURS_MAX = 24;        // can't log more than 24 hrs/day
+const RATE_MAX = 1;          // can't answer more than 100%
+const STORAGE_KEY = "msc-state-v2";
+const THEME_KEY = "msc-theme";
+const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+/* ---------- Date helpers ---------- */
+function dateKey(d){
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function monthKey(y, m){ return y + "-" + m; }
+function fmtDateKey(k){
+  const p = k.split("-").map(Number);
+  return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
 
 /* ---------- Holiday calculation ---------- */
 function lastWeekdayOfMonth(year, monthIndex, weekday){
-  let d = new Date(year, monthIndex + 1, 0); // last day of month
+  let d = new Date(year, monthIndex + 1, 0);
   while(d.getDay() !== weekday) d.setDate(d.getDate() - 1);
   return d;
 }
@@ -589,26 +589,18 @@ function nthWeekdayOfMonth(year, monthIndex, weekday, n){
     d.setDate(d.getDate() + 1);
   }
 }
-// Returns the list of observed-if-weekday holidays for a given year.
-// Per spec: if a fixed-date holiday falls on a weekend, it is simply NOT counted
-// that year (no shift to an adjacent weekday).
+// Fixed-date holidays that fall on a weekend are simply NOT counted (no shifting).
 function getHolidays(year){
   return [
     { name: "New Year's Day", date: new Date(year, 0, 1) },
-    { name: "Memorial Day", date: lastWeekdayOfMonth(year, 4, 1) },      // last Monday of May
+    { name: "Memorial Day", date: lastWeekdayOfMonth(year, 4, 1) },
     { name: "Independence Day", date: new Date(year, 6, 4) },
-    { name: "Labor Day", date: nthWeekdayOfMonth(year, 8, 1, 1) },       // 1st Monday of Sept
-    { name: "Thanksgiving", date: nthWeekdayOfMonth(year, 10, 4, 4) },   // 4th Thursday of Nov
+    { name: "Labor Day", date: nthWeekdayOfMonth(year, 8, 1, 1) },
+    { name: "Thanksgiving", date: nthWeekdayOfMonth(year, 10, 4, 4) },
     { name: "Christmas Day", date: new Date(year, 11, 25) },
-  ].filter(h => h.date.getDay() !== 0 && h.date.getDay() !== 6); // drop weekend-falling holidays entirely
+  ].filter(h => h.date.getDay() !== 0 && h.date.getDay() !== 6);
 }
-
-function isWeekday(d){
-  const day = d.getDay();
-  return day !== 0 && day !== 6;
-}
-
-// Counts Mon-Fri days between start and end (inclusive), minus any weekday-holidays in range.
+function isWeekday(d){ const day = d.getDay(); return day !== 0 && day !== 6; }
 function networkDays(start, end, holidays){
   if(end < start) return 0;
   let count = 0;
@@ -620,145 +612,158 @@ function networkDays(start, end, holidays){
   }
   return count;
 }
-
 function monthBounds(year, monthIndex){
-  const start = new Date(year, monthIndex, 1);
-  const end = new Date(year, monthIndex + 1, 0);
-  return { start, end };
+  return { start: new Date(year, monthIndex, 1), end: new Date(year, monthIndex + 1, 0) };
 }
 
 /* ---------- Core required-average formula ---------- */
 // required = (goal*totalDays - currentAvg*daysWorked) / (totalDays - daysWorked)
 function requiredAverage(goal, totalDays, currentAvg, daysWorked){
   const remaining = totalDays - daysWorked;
-  if(remaining <= 0 || totalDays <= 0){
-    return { ok: false };
-  }
+  if(remaining <= 0 || totalDays <= 0) return { ok: false };
   const value = (goal * totalDays - currentAvg * daysWorked) / remaining;
   return { ok: true, value, remaining };
 }
 
-/* ---------- UI setup ---------- */
-const monthSelect = document.getElementById("month");
-const yearSelect = document.getElementById("year");
-const vacVal = document.getElementById("vacVal");
-const vacUp = document.getElementById("vacUp");
-const vacDown = document.getElementById("vacDown");
-const vacHalf = document.getElementById("vacHalf");
-const dwUp = document.getElementById("dwUp");
-const dwDown = document.getElementById("dwDown");
-const dwHalf = document.getElementById("dwHalf");
-const hoursUp = document.getElementById("hoursUp");
-const hoursDown = document.getElementById("hoursDown");
-const minutesUp = document.getElementById("minutesUp");
-const minutesDown = document.getElementById("minutesDown");
-const rateUp = document.getElementById("rateUp");
-const rateDown = document.getElementById("rateDown");
+/* ---------- Elements ---------- */
+const $ = (id) => document.getElementById(id);
+const monthSelect = $("month"), yearSelect = $("year");
+const dwInput = $("daysWorked");
+const vac = {
+  vacPast:     { val: $("vpVal"), up: $("vpUp"), down: $("vpDown"), half: $("vpHalf") },
+  vacUpcoming: { val: $("vuVal"), up: $("vuUp"), down: $("vuDown"), half: $("vuHalf") },
+};
 
-// Toggles the .5 fraction on a value: adds it if the value is currently a
-// whole number, removes it if the value already has a half-day fraction.
-function toggleHalfValue(value, min, max){
-  const v = Number(value) || 0;
-  const hasHalf = Math.abs((v % 1) - 0.5) < 1e-9;
-  let result = hasHalf ? Math.floor(v) : Math.floor(v) + 0.5;
-  if(result < min) result = min;
-  if(result > max) result = max;
-  return result;
-}
-
-const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-MONTH_NAMES.forEach((m, i) => {
-  const opt = document.createElement("option");
-  opt.value = i;
-  opt.textContent = m;
-  monthSelect.appendChild(opt);
-});
-
-const today = new Date();
-const thisYear = today.getFullYear();
-for(let y = thisYear - 2; y <= thisYear + 5; y++){
-  const opt = document.createElement("option");
-  opt.value = y;
-  opt.textContent = y;
-  yearSelect.appendChild(opt);
-}
-
+/* ---------- State ---------- */
+// month/year are NOT persisted: the app always opens on the current month.
+// Vacation and the manual Days Worked override are stored per month; an override
+// expires at the end of the day it was set.
+const now0 = new Date();
 let state = {
-  month: today.getMonth(),
-  year: thisYear,
-  vacationDays: 0,
-  daysWorked: null,   // null = "auto" not yet overridden
+  month: now0.getMonth(),
+  year: now0.getFullYear(),
+  includeToday: false,
   avgHours: "",
   avgMinutes: "",
   avgRate: "",
-  overrideDaysWorked: false,
+  inputsUpdated: null,
+  months: {},
 };
+let lastAdj = 0;
+let currentDaysWorked = 0;
+let lastDateKey = dateKey(now0);
 
 function loadState(){
   try{
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if(saved) state = Object.assign(state, saved);
+    const s = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if(!s) return;
+    state.includeToday = !!s.includeToday;
+    ["avgHours","avgMinutes","avgRate"].forEach(k => { if(typeof s[k] === "string") state[k] = s[k]; });
+    state.inputsUpdated = s.inputsUpdated || null;
+    if(s.months && typeof s.months === "object") state.months = s.months;
   }catch(e){ /* ignore */ }
 }
 function saveState(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      includeToday: state.includeToday,
+      avgHours: state.avgHours,
+      avgMinutes: state.avgMinutes,
+      avgRate: state.avgRate,
+      inputsUpdated: state.inputsUpdated,
+      months: state.months,
+    }));
+  }catch(e){ /* storage unavailable */ }
 }
+function mdata(){
+  const k = monthKey(state.year, state.month);
+  if(!state.months[k]) state.months[k] = { vacPast: 0, vacUpcoming: 0, dwOverride: null, dwOverrideDate: null };
+  return state.months[k];
+}
+function touchInputs(){ state.inputsUpdated = dateKey(new Date()); }
 
-function autoDaysWorked(year, monthIndex, holidays, totalWorkingDays){
-  const { start, end } = monthBounds(year, monthIndex);
-  const isCurrentMonth = (year === today.getFullYear() && monthIndex === today.getMonth());
-  if(isCurrentMonth){
-    const cappedToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    if(cappedToday < start) return 0;
-    const elapsedEnd = cappedToday > end ? end : cappedToday;
-    return networkDays(start, elapsedEnd, holidays);
-  } else if(new Date(year, monthIndex, 1) < new Date(today.getFullYear(), today.getMonth(), 1)){
-    // past month: fully elapsed
-    return totalWorkingDays;
-  } else {
-    // future month
-    return 0;
+/* ---------- Select options ---------- */
+MONTH_NAMES.forEach((m, i) => {
+  const opt = document.createElement("option");
+  opt.value = i; opt.textContent = m;
+  monthSelect.appendChild(opt);
+});
+function populateYears(){
+  const y0 = new Date().getFullYear();
+  const lo = Math.min(y0 - 2, state.year), hi = Math.max(y0 + 5, state.year);
+  yearSelect.innerHTML = "";
+  for(let y = lo; y <= hi; y++){
+    const opt = document.createElement("option");
+    opt.value = y; opt.textContent = y;
+    yearSelect.appendChild(opt);
   }
 }
 
-// Converts hours+minutes duration inputs to a decimal (e.g. 5 hrs 30 min -> 5.5)
-function hoursMinutesToDecimal(hours, minutes){
-  return (Number(hours) || 0) + (Number(minutes) || 0) / 60;
+/* ---------- Misc helpers ---------- */
+function hasHalf(v){ return Math.abs(((Number(v) || 0) % 1) - 0.5) < 1e-9; }
+// Adds the .5 fraction to a whole number, or removes it if already present.
+function toggleHalfValue(value, min, max){
+  const v = Number(value) || 0;
+  let result = hasHalf(v) ? Math.floor(v) : Math.floor(v) + 0.5;
+  return Math.min(max, Math.max(min, result));
 }
-function decimalToTimeString(hrsDecimal){
-  if(!isFinite(hrsDecimal) || hrsDecimal < 0) hrsDecimal = 0;
-  const totalMinutes = Math.round(hrsDecimal * 60);
-  const h = Math.floor(totalMinutes / 60);
-  const m = totalMinutes % 60;
-  return `${h}:${String(m).padStart(2,"0")}`;
+function setIfIdle(el, val){ if(document.activeElement !== el) el.value = val; }
+function hoursMinutesToDecimal(h, m){ return (Number(h) || 0) + (Number(m) || 0) / 60; }
+function decimalToTimeString(hrs){
+  if(!isFinite(hrs) || hrs < 0) hrs = 0;
+  const total = Math.round(hrs * 60);
+  return Math.floor(total / 60) + ":" + String(total % 60).padStart(2, "0");
 }
 
-function setResult(cardPrefix, resultData, goal, unitFormatter, statusHigherIsHarder){
-  const resultEl = document.getElementById(cardPrefix + "Result");
-  const bigEl = document.getElementById(cardPrefix + "Big");
-  const subEl = document.getElementById(cardPrefix + "Sub");
-  const statusEl = document.getElementById(cardPrefix + "Status");
+// Auto "days worked": weekdays elapsed so far this month (through yesterday unless
+// "count today" is on) minus vacation already taken. Past months = all working days.
+function autoDaysWorked(year, monthIndex, holidays, adj, vacPast, t){
+  const { start, end } = monthBounds(year, monthIndex);
+  const isCurrent = (year === t.getFullYear() && monthIndex === t.getMonth());
+  if(isCurrent){
+    let last = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+    if(!state.includeToday) last.setDate(last.getDate() - 1);
+    if(last < start) return 0;
+    if(last > end) last = end;
+    return Math.min(adj, Math.max(0, networkDays(start, last, holidays) - vacPast));
+  }
+  if(new Date(year, monthIndex, 1) < new Date(t.getFullYear(), t.getMonth(), 1)) return adj;
+  return 0;
+}
 
-  resultEl.classList.remove("red","green","gray");
+function setResult(prefix, r, goal, fmt, maxPossible){
+  const resultEl = $(prefix + "Result"), bigEl = $(prefix + "Big"),
+        subEl = $(prefix + "Sub"), statusEl = $(prefix + "Status");
+  resultEl.classList.remove("red", "green", "gray");
 
-  if(!resultData.ok){
+  if(!r.ok){
     resultEl.classList.add("gray");
     bigEl.textContent = "—";
     subEl.textContent = "No days remaining this month";
     statusEl.textContent = "";
     return;
   }
-
-  bigEl.textContent = unitFormatter(resultData.value);
-  subEl.textContent = `Required average for the remaining ${resultData.remaining} working day${resultData.remaining === 1 ? "" : "s"}`;
-
-  // harder-than-goal => red, easier-than-goal => green
-  const harder = resultData.value > goal + 1e-9;
-  const easier = resultData.value < goal - 1e-9;
-  if(harder){
+  const days = `${r.remaining} working day${r.remaining === 1 ? "" : "s"}`;
+  if(r.value <= 1e-9){
+    resultEl.classList.add("green");
+    bigEl.textContent = "Goal secured";
+    subEl.textContent = `Your average is high enough that nothing more is needed for the remaining ${days}`;
+    statusEl.textContent = "Goal secured";
+    return;
+  }
+  if(r.value > maxPossible + 1e-9){
+    resultEl.classList.add("red");
+    bigEl.textContent = "Not reachable";
+    subEl.textContent = `Would need ${fmt(r.value)} for the remaining ${days}`;
+    statusEl.textContent = "Can't reach goal this month";
+    return;
+  }
+  bigEl.textContent = fmt(r.value);
+  subEl.textContent = `Required average for the remaining ${days}`;
+  if(r.value > goal + 1e-9){
     resultEl.classList.add("red");
     statusEl.textContent = "Below goal — behind pace";
-  } else if(easier){
+  } else if(r.value < goal - 1e-9){
     resultEl.classList.add("green");
     statusEl.textContent = "Above goal — ahead of pace";
   } else {
@@ -767,182 +772,223 @@ function setResult(cardPrefix, resultData, goal, unitFormatter, statusHigherIsHa
   }
 }
 
+/* ---------- Render ---------- */
 function render(){
-  monthSelect.value = state.month;
-  yearSelect.value = state.year;
-  if(document.activeElement !== vacVal) vacVal.value = state.vacationDays;
-  vacDown.disabled = state.vacationDays <= 0;
-  vacUp.disabled = state.vacationDays >= 10;
-  vacHalf.classList.toggle("active", Math.abs((Number(state.vacationDays) || 0) % 1 - 0.5) < 1e-9);
+  const t = new Date();
+  const todayKey = dateKey(t);
+  const year = Number(state.year), monthIndex = Number(state.month);
+  const m = mdata();
 
-  const year = Number(state.year);
-  const monthIndex = Number(state.month);
+  monthSelect.value = monthIndex;
+  yearSelect.value = year;
+
+  Object.keys(vac).forEach(f => {
+    const c = vac[f];
+    setIfIdle(c.val, m[f]);
+    c.down.disabled = m[f] <= 0;
+    c.up.disabled = m[f] >= 10;
+    c.half.classList.toggle("active", hasHalf(m[f]));
+  });
+
   const { start, end } = monthBounds(year, monthIndex);
   const holidays = getHolidays(year).filter(h => h.date >= start && h.date <= end);
-
   const rawWorkingDays = networkDays(start, end, holidays);
-  const adjWorkingDays = Math.max(0, rawWorkingDays - state.vacationDays);
+  const adj = Math.max(0, rawWorkingDays - m.vacPast - m.vacUpcoming);
+  lastAdj = adj;
 
-  // Days worked (shared by both cards)
-  const autoWorked = autoDaysWorked(year, monthIndex, holidays, adjWorkingDays);
-  const daysWorkedInput = document.getElementById("daysWorked");
-  if(!state.overrideDaysWorked){
-    const autoVal = Math.min(autoWorked, adjWorkingDays);
-    state.daysWorked = autoVal;
-    if(document.activeElement !== daysWorkedInput) daysWorkedInput.value = autoVal;
-  } else {
-    if(document.activeElement !== daysWorkedInput) daysWorkedInput.value = state.daysWorked;
+  // Manual override expires after the day it was set
+  if(m.dwOverride !== null && m.dwOverrideDate !== todayKey){
+    m.dwOverride = null;
+    m.dwOverrideDate = null;
   }
-  dwHalf.classList.toggle("active", Math.abs((Number(state.daysWorked) || 0) % 1 - 0.5) < 1e-9);
+  const overridden = m.dwOverride !== null;
+  const auto = autoDaysWorked(year, monthIndex, holidays, adj, m.vacPast, t);
+  const daysWorked = overridden ? Math.min(m.dwOverride, adj) : auto;
+  currentDaysWorked = daysWorked;
 
-  const avgHoursEl = document.getElementById("avgHours");
-  const avgMinutesEl = document.getElementById("avgMinutes");
-  const avgRateEl = document.getElementById("avgRate");
-  if(document.activeElement !== avgHoursEl) avgHoursEl.value = state.avgHours;
-  if(document.activeElement !== avgMinutesEl) avgMinutesEl.value = state.avgMinutes;
-  if(document.activeElement !== avgRateEl) avgRateEl.value = state.avgRate || "";
+  setIfIdle(dwInput, daysWorked);
+  dwHalf.classList.toggle("active", hasHalf(daysWorked));
+  const isCurrent = (year === t.getFullYear() && monthIndex === t.getMonth());
+  $("includeTodayLabel").hidden = !isCurrent;
+  $("includeToday").checked = state.includeToday;
+  $("dwAuto").hidden = !overridden;
+  $("dwHint").textContent = overridden
+    ? "Manual Entry — Clears Tomorrow, Or Tap Reset To Auto"
+    : isCurrent
+      ? `Auto-Calculated Through ${state.includeToday ? "Today" : "Yesterday"} — ± And ½ Adjust It`
+      : "Auto-Calculated For This Month — ± And ½ Adjust It";
 
-  const summaryBar = document.getElementById("summaryBar");
   const holidayNames = holidays.map(h => h.name).join(", ") || "none";
-  summaryBar.innerHTML = `
+  $("summaryBar").innerHTML = `
     <span><b>${MONTH_NAMES[monthIndex]} ${year}</b></span>
     <span>Weekdays: <b>${rawWorkingDays + holidays.length}</b> Total Weekdays, Minus <b>${holidays.length}</b> Holiday(s)</span>
     <span>Holidays Counted: <b>${holidayNames}</b></span>
-    <span>Working Days After Vacation: <b>${adjWorkingDays}</b></span>
+    <span>Working Days After Vacation: <b>${adj}</b></span>
   `;
 
-  document.getElementById("hoursWorkingDays").textContent = adjWorkingDays;
-  document.getElementById("rateWorkingDays").textContent = adjWorkingDays;
+  setIfIdle($("avgHours"), state.avgHours);
+  setIfIdle($("avgMinutes"), state.avgMinutes);
+  setIfIdle($("avgRate"), state.avgRate);
 
-  const currentAvgHours = hoursMinutesToDecimal(state.avgHours, state.avgMinutes);
-  const hoursResult = requiredAverage(HOURS_GOAL, adjWorkingDays, currentAvgHours, Number(state.daysWorked) || 0);
-  document.getElementById("hoursDaysRemaining").textContent = hoursResult.ok ? hoursResult.remaining : 0;
-  setResult("hours", hoursResult, HOURS_GOAL, v => `${decimalToTimeString(v)} (${v.toFixed(2)} hrs)`);
+  const anyAvg = state.avgHours !== "" || state.avgMinutes !== "" || state.avgRate !== "";
+  const stale = $("staleNote");
+  if(anyAvg && state.inputsUpdated && state.inputsUpdated !== todayKey){
+    stale.hidden = false;
+    stale.textContent = `Your averages were last updated ${fmtDateKey(state.inputsUpdated)} — update them with today's numbers.`;
+  } else {
+    stale.hidden = true;
+  }
 
-  const currentAvgRate = (Number(state.avgRate) || 0) / 100;
-  const rateResult = requiredAverage(RATE_GOAL, adjWorkingDays, currentAvgRate, Number(state.daysWorked) || 0);
-  document.getElementById("rateDaysRemaining").textContent = rateResult.ok ? rateResult.remaining : 0;
-  setResult("rate", rateResult, RATE_GOAL, v => `${(v * 100).toFixed(2)}%`);
+  $("hoursWorkingDays").textContent = adj;
+  $("rateWorkingDays").textContent = adj;
+
+  const hoursResult = requiredAverage(HOURS_GOAL, adj, hoursMinutesToDecimal(state.avgHours, state.avgMinutes), daysWorked);
+  $("hoursDaysRemaining").textContent = hoursResult.ok ? hoursResult.remaining : 0;
+  setResult("hours", hoursResult, HOURS_GOAL, v => `${decimalToTimeString(v)} (${v.toFixed(2)} hrs)`, HOURS_MAX);
+
+  const rateResult = requiredAverage(RATE_GOAL, adj, (Number(state.avgRate) || 0) / 100, daysWorked);
+  $("rateDaysRemaining").textContent = rateResult.ok ? rateResult.remaining : 0;
+  setResult("rate", rateResult, RATE_GOAL, v => `${(v * 100).toFixed(2)}%`, RATE_MAX);
 
   saveState();
 }
+const dwHalf = $("dwHalf");
 
-/* ---------- Event wiring ---------- */
-monthSelect.addEventListener("change", () => {
-  state.month = Number(monthSelect.value);
-  state.overrideDaysWorked = false;
+/* ---------- Events: month / year ---------- */
+monthSelect.addEventListener("change", () => { state.month = Number(monthSelect.value); render(); });
+yearSelect.addEventListener("change", () => { state.year = Number(yearSelect.value); render(); });
+
+/* ---------- Events: vacation (taken / upcoming) ---------- */
+Object.keys(vac).forEach(f => {
+  const c = vac[f];
+  const set = (v) => { mdata()[f] = Math.min(10, Math.max(0, v)); render(); };
+  c.up.addEventListener("click", () => set((Number(mdata()[f]) || 0) + 1));
+  c.down.addEventListener("click", () => set((Number(mdata()[f]) || 0) - 1));
+  c.half.addEventListener("click", () => set(toggleHalfValue(mdata()[f], 0, 10)));
+  c.val.addEventListener("input", (e) => {
+    const v = parseFloat(e.target.value);
+    set(isNaN(v) ? 0 : v);
+  });
+});
+
+/* ---------- Events: days worked ---------- */
+function setDw(v){
+  const m = mdata();
+  m.dwOverride = Math.min(lastAdj, Math.max(0, v));
+  m.dwOverrideDate = dateKey(new Date());
+  render();
+}
+$("dwUp").addEventListener("click", () => setDw(currentDaysWorked + 1));
+$("dwDown").addEventListener("click", () => setDw(currentDaysWorked - 1));
+dwHalf.addEventListener("click", () => setDw(toggleHalfValue(currentDaysWorked, 0, lastAdj)));
+dwInput.addEventListener("input", (e) => setDw(Number(e.target.value) || 0));
+$("dwAuto").addEventListener("click", () => {
+  const m = mdata();
+  m.dwOverride = null;
+  m.dwOverrideDate = null;
   render();
 });
-yearSelect.addEventListener("change", () => {
-  state.year = Number(yearSelect.value);
-  state.overrideDaysWorked = false;
-  render();
+$("includeToday").addEventListener("change", (e) => { state.includeToday = e.target.checked; render(); });
+
+/* ---------- Events: averages ---------- */
+function clampStr(v, max){
+  if(v === "") return v;
+  const n = Number(v);
+  if(n > max) return String(max);
+  if(n < 0) return "0";
+  return v;
+}
+function bumpStr(cur, delta, max){
+  return String(Math.min(max, Math.max(0, Math.round(((Number(cur) || 0) + delta) * 100) / 100)));
+}
+$("avgHours").addEventListener("input", (e) => { state.avgHours = clampStr(e.target.value, HOURS_MAX); touchInputs(); render(); });
+$("hoursUp").addEventListener("click", () => { state.avgHours = bumpStr(state.avgHours, 1, HOURS_MAX); touchInputs(); render(); });
+$("hoursDown").addEventListener("click", () => { state.avgHours = bumpStr(state.avgHours, -1, HOURS_MAX); touchInputs(); render(); });
+$("avgMinutes").addEventListener("input", (e) => { state.avgMinutes = clampStr(e.target.value, 59); touchInputs(); render(); });
+$("minutesUp").addEventListener("click", () => { state.avgMinutes = bumpStr(state.avgMinutes, 5, 59); touchInputs(); render(); });
+$("minutesDown").addEventListener("click", () => { state.avgMinutes = bumpStr(state.avgMinutes, -5, 59); touchInputs(); render(); });
+$("avgRate").addEventListener("input", (e) => { state.avgRate = clampStr(e.target.value, 100); touchInputs(); render(); });
+$("rateUp").addEventListener("click", () => { state.avgRate = bumpStr(state.avgRate, 1, 100); touchInputs(); render(); });
+$("rateDown").addEventListener("click", () => { state.avgRate = bumpStr(state.avgRate, -1, 100); touchInputs(); render(); });
+
+// When a field loses focus, re-sync it to the (clamped) stored value.
+["vpVal","vuVal","daysWorked","avgHours","avgMinutes","avgRate"].forEach(id => {
+  $(id).addEventListener("blur", () => setTimeout(render, 0));
 });
-vacUp.addEventListener("click", () => {
-  state.vacationDays = Math.min(10, (Number(state.vacationDays) || 0) + 1);
-  render();
-});
-vacDown.addEventListener("click", () => {
-  state.vacationDays = Math.max(0, (Number(state.vacationDays) || 0) - 1);
-  render();
-});
-document.getElementById("vacVal").addEventListener("input", (e) => {
-  let v = parseFloat(e.target.value);
-  if(isNaN(v)) v = 0;
-  v = Math.min(10, Math.max(0, v));
-  state.vacationDays = v;
-  render();
-});
-vacHalf.addEventListener("click", () => {
-  state.vacationDays = toggleHalfValue(state.vacationDays, 0, 10);
-  render();
-});
-document.getElementById("daysWorked").addEventListener("input", (e) => {
-  state.overrideDaysWorked = true;
-  state.daysWorked = Number(e.target.value) || 0;
-  render();
-});
-dwUp.addEventListener("click", () => {
-  state.overrideDaysWorked = true;
-  state.daysWorked = (Number(state.daysWorked) || 0) + 1;
-  render();
-});
-dwDown.addEventListener("click", () => {
-  state.overrideDaysWorked = true;
-  state.daysWorked = Math.max(0, (Number(state.daysWorked) || 0) - 1);
-  render();
-});
-dwHalf.addEventListener("click", () => {
-  state.overrideDaysWorked = true;
-  state.daysWorked = toggleHalfValue(state.daysWorked, 0, Infinity);
-  render();
-});
-document.getElementById("avgHours").addEventListener("input", (e) => {
-  state.avgHours = e.target.value;
-  render();
-});
-hoursUp.addEventListener("click", () => {
-  state.avgHours = String(Math.min(24, (Number(state.avgHours) || 0) + 1));
-  render();
-});
-hoursDown.addEventListener("click", () => {
-  state.avgHours = String(Math.max(0, (Number(state.avgHours) || 0) - 1));
-  render();
-});
-document.getElementById("avgMinutes").addEventListener("input", (e) => {
-  let v = e.target.value;
-  if(v !== "" && Number(v) > 59) v = "59";
-  state.avgMinutes = v;
-  render();
-});
-minutesUp.addEventListener("click", () => {
-  state.avgMinutes = String(Math.min(59, (Number(state.avgMinutes) || 0) + 5));
-  render();
-});
-minutesDown.addEventListener("click", () => {
-  state.avgMinutes = String(Math.max(0, (Number(state.avgMinutes) || 0) - 5));
-  render();
-});
-document.getElementById("avgRate").addEventListener("input", (e) => {
-  state.avgRate = e.target.value;
-  render();
-});
-rateUp.addEventListener("click", () => {
-  state.avgRate = String(Math.min(100, Math.round(((Number(state.avgRate) || 0) + 1) * 100) / 100));
-  render();
-});
-rateDown.addEventListener("click", () => {
-  state.avgRate = String(Math.max(0, Math.round(((Number(state.avgRate) || 0) - 1) * 100) / 100));
+
+/* ---------- Reset ---------- */
+$("resetBtn").addEventListener("click", () => {
+  if(!confirm("Clear the averages and this month's vacation and days-worked entries?")) return;
+  state.avgHours = ""; state.avgMinutes = ""; state.avgRate = "";
+  state.inputsUpdated = null;
+  state.months[monthKey(state.year, state.month)] = { vacPast: 0, vacUpcoming: 0, dwOverride: null, dwOverrideDate: null };
   render();
 });
 
+/* ---------- New day / app resume ---------- */
+function checkDateRollover(){
+  const k = dateKey(new Date());
+  if(k === lastDateKey) return;
+  lastDateKey = k;
+  const t = new Date();
+  state.month = t.getMonth();
+  state.year = t.getFullYear();
+  populateYears();
+  render();
+}
+document.addEventListener("visibilitychange", () => { if(!document.hidden) checkDateRollover(); });
+window.addEventListener("focus", checkDateRollover);
+setInterval(checkDateRollover, 60000);
+
+/* ---------- Theme ---------- */
+const themeBtn = $("themeToggle");
+function applyTheme(t){
+  document.documentElement.setAttribute("data-theme", t);
+  themeBtn.textContent = t === "dark" ? "☀" : "☾";
+  themeBtn.setAttribute("aria-label", t === "dark" ? "Switch to light theme" : "Switch to dark theme");
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute("content", t === "dark" ? "#000000" : "#f4f5f9");
+}
+themeBtn.addEventListener("click", () => {
+  const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  try{ localStorage.setItem(THEME_KEY, next); }catch(e){ /* ignore */ }
+  applyTheme(next);
+});
+if(window.matchMedia){
+  const mq = matchMedia("(prefers-color-scheme: dark)");
+  const onChange = (e) => {
+    let saved = null;
+    try{ saved = localStorage.getItem(THEME_KEY); }catch(err){ /* ignore */ }
+    if(saved !== "light" && saved !== "dark") applyTheme(e.matches ? "dark" : "light");
+  };
+  if(mq.addEventListener) mq.addEventListener("change", onChange);
+}
+applyTheme(document.documentElement.getAttribute("data-theme"));
+
+/* ---------- Init ---------- */
 loadState();
+populateYears();
 render();
 
 /* ---------- Disclaimer modal (flip-card easter egg) ---------- */
-const disclaimerBtn = document.getElementById("disclaimerBtn");
-const disclaimerOverlay = document.getElementById("disclaimerOverlay");
-const disclaimerCard = document.getElementById("disclaimerCard");
-const easterEggVideo = document.getElementById("easterEggVideo");
-const AUTO_FLIP_DELAY = 10000; // ms before the card flips itself to reveal the video
+const disclaimerBtn = $("disclaimerBtn");
+const disclaimerOverlay = $("disclaimerOverlay");
+const disclaimerCard = $("disclaimerCard");
+const easterEggVideo = $("easterEggVideo");
+const AUTO_FLIP_DELAY = 10000;
 let disclaimerFlipTimer = null;
 
 function scheduleAutoFlip(){
   clearTimeout(disclaimerFlipTimer);
-  disclaimerFlipTimer = setTimeout(() => {
-    disclaimerCard.classList.add("flipped");
-  }, AUTO_FLIP_DELAY);
+  disclaimerFlipTimer = setTimeout(() => disclaimerCard.classList.add("flipped"), AUTO_FLIP_DELAY);
 }
-
 function openDisclaimer(){
   disclaimerOverlay.hidden = false;
   disclaimerCard.classList.remove("flipped");
   scheduleAutoFlip();
-  if(easterEggVideo && easterEggVideo.paused){
-    const playPromise = easterEggVideo.play();
-    if(playPromise && typeof playPromise.catch === "function"){
-      playPromise.catch(() => {/* ignore autoplay rejection */});
-    }
+  if(easterEggVideo){
+    const p = easterEggVideo.play();
+    if(p && typeof p.catch === "function") p.catch(() => {});
   }
   const firstClose = disclaimerCard.querySelector(".flip-card-front .modal-close");
   if(firstClose) firstClose.focus();
@@ -951,29 +997,21 @@ function closeDisclaimer(){
   disclaimerOverlay.hidden = true;
   clearTimeout(disclaimerFlipTimer);
   disclaimerCard.classList.remove("flipped");
+  if(easterEggVideo){
+    try{ easterEggVideo.pause(); easterEggVideo.currentTime = 0; }catch(e){ /* ignore */ }
+  }
   disclaimerBtn.focus();
 }
-
 disclaimerBtn.addEventListener("click", openDisclaimer);
-
-// Tapping anywhere on the card (except the Close buttons) flips it manually,
-// and cancels the auto-flip timer so it doesn't fight the user's own tap.
 disclaimerCard.addEventListener("click", (e) => {
   if(e.target.closest(".modal-close")) return;
   clearTimeout(disclaimerFlipTimer);
   disclaimerCard.classList.toggle("flipped");
 });
-
 disclaimerCard.querySelectorAll(".modal-close").forEach((btn) => {
-  btn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    closeDisclaimer();
-  });
+  btn.addEventListener("click", (e) => { e.stopPropagation(); closeDisclaimer(); });
 });
-
-disclaimerOverlay.addEventListener("click", (e) => {
-  if(e.target === disclaimerOverlay) closeDisclaimer();
-});
+disclaimerOverlay.addEventListener("click", (e) => { if(e.target === disclaimerOverlay) closeDisclaimer(); });
 document.addEventListener("keydown", (e) => {
   if(e.key === "Escape" && !disclaimerOverlay.hidden) closeDisclaimer();
 });
@@ -981,7 +1019,7 @@ document.addEventListener("keydown", (e) => {
 /* ---------- PWA service worker registration ---------- */
 if("serviceWorker" in navigator){
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {/* ignore */});
+    navigator.serviceWorker.register("sw.js").catch(() => {});
   });
 }
 </script>
